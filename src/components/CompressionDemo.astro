@@ -1,0 +1,70 @@
+---
+import { statSync } from 'node:fs';
+import { join } from 'node:path';
+import { sitePath } from '../lib/site';
+
+interface Props { featured?: boolean; projectUrl?: string }
+const { featured = false, projectUrl } = Astro.props;
+const original = 'media/terrain-original.jpg';
+const compressed = 'media/terrain-compressed.jpg';
+const size = (file: string) => statSync(join(process.cwd(), 'public', file)).size;
+const before = size(original);
+const after = size(compressed);
+const kib = (bytes: number) => (bytes / 1024).toFixed(1) + ' KiB';
+const saving = ((1 - after / before) * 100).toFixed(1);
+---
+<figure class="comparison">
+  <div class="compare-stage" data-comparison>
+    <img class="compare-after" src={sitePath(compressed)} alt="钴蓝色底板上的三维山脊等高线模型" width="1140" height="760" fetchpriority={featured ? 'high' : 'auto'} />
+    <img class="compare-before" src={sitePath(original)} alt="" width="1140" height="760" />
+    <span class="compare-label left" aria-hidden="true">原图</span>
+    <span class="compare-label right" aria-hidden="true">压缩后</span>
+    <input class="compare-input" type="range" min="0" max="100" value="56" aria-label="调整压缩对照图的原图占比" hidden />
+    <span class="compare-line" aria-hidden="true"><span class="compare-knob"></span></span>
+  </div>
+  <figcaption>
+    <div class="compare-credit">
+      <strong>{projectUrl ? <a href={projectUrl}>ImgShift 压缩对照 <span aria-hidden="true">↗</span></a> : 'JPEG 压缩对照'}</strong>
+      <span class="byte-label"><a href={sitePath(original)} aria-label={'查看原图，' + kib(before)}>{kib(before)}</a> → <a href={sitePath(compressed)} aria-label={'查看压缩图，' + kib(after)}>{kib(after)}</a></span>
+    </div>
+    <span class="savings" aria-label={'文件体积减少 ' + saving + '%'}>−{saving}%</span>
+  </figcaption>
+</figure>
+<script>
+  for (const stage of document.querySelectorAll<HTMLElement>('[data-comparison]')) {
+    const range = stage.querySelector<HTMLInputElement>('input');
+    if (!range) continue;
+    const update = () => {
+      const value = range.value + '%';
+      stage.style.setProperty('--split', value);
+      range.setAttribute('aria-valuetext', '原图占 ' + value);
+    };
+    range.hidden = false;
+    stage.classList.add('can-slide');
+    range.addEventListener('input', update);
+    update();
+  }
+</script>
+<style>
+  .comparison { margin: 0; min-width: 0; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .compare-stage { --split: 56%; position: relative; isolation: isolate; aspect-ratio: 3 / 2; background: #264aca; overflow: hidden; }
+  .compare-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .compare-before { clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+  .compare-label { position: absolute; top: 14px; padding: 3px 8px; border-radius: 2px; color: white; background: #182b6dbd; font-size: 11px; line-height: 1.6; pointer-events: none; }
+  .left { left: 15px; }
+  .right { right: 15px; }
+  .compare-input { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; margin: 0; cursor: ew-resize; opacity: 0; touch-action: pan-y; }
+  .compare-line { position: absolute; top: 0; bottom: 0; left: var(--split); width: 1px; background: #fff9; pointer-events: none; }
+  .compare-knob { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); display: none; justify-content: center; align-items: center; gap: 5px; width: 33px; height: 33px; border-radius: 50%; background: white; color: #2444a9; box-shadow: 0 2px 12px #13246333; }
+  .can-slide .compare-knob { display: flex; }
+  .compare-knob::before, .compare-knob::after { content: ''; width: 5px; height: 5px; border: solid currentColor; border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); }
+  .compare-knob::before { transform: rotate(-135deg); }
+  .compare-input:focus-visible ~ .compare-line .compare-knob { outline: 3px solid #121c3b; outline-offset: 3px; }
+  figcaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 17px; }
+  .compare-credit { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 13px; row-gap: 2px; }
+  .compare-credit strong { font-size: 13px; font-weight: 650; }
+  .compare-credit strong span { color: var(--blue); }
+  .byte-label { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .byte-label a:hover, strong a:hover { text-decoration: underline; }
+  .savings { white-space: nowrap; font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--blue); }
+</style>

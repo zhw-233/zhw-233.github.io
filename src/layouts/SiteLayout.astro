@@ -1,0 +1,67 @@
+---
+import Wordmark from '../components/Wordmark.astro';
+import { site, sitePath } from '../lib/site';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  section?: 'home' | 'projects' | 'notes';
+  article?: boolean;
+  image?: string;
+}
+
+const { title, description = site.description, section, article = false, image } = Astro.props;
+const nav = [
+  { id: 'home', label: '首页', path: '' },
+  { id: 'projects', label: '项目', path: 'projects/' },
+  { id: 'notes', label: '笔记', path: 'notes/' },
+];
+const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site).href;
+const shareImage = Astro.site && new URL(sitePath(image || 'media/terrain-original.jpg'), Astro.site).href;
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f9f9f6" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:locale" content="zh_CN" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    {shareImage && <meta property="og:image" content={shareImage} />}
+    <link rel="icon" type="image/png" href={sitePath('favicon.png')} />
+  </head>
+  <body id="top">
+    <a href="#main" class="skip-link">跳到正文</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand-link" href={sitePath()} aria-label={site.name + ' 首页'}><Wordmark /></a>
+        <nav class="main-nav" aria-label="主导航">
+          {nav.map((item) => {
+            const selected = section === item.id;
+            const current = Astro.url.pathname === sitePath(item.path) ? 'page' : 'location';
+            return <a href={sitePath(item.path)} aria-current={selected ? current : undefined}>{item.label}</a>;
+          })}
+        </nav>
+        <a class="github-link" href={site.github}>GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+    <main id="main" tabindex="-1"><slot /></main>
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <a class="brand-link" href={sitePath()} aria-label={site.name + ' 首页'}><Wordmark /></a>
+        <div class="footer-links">
+          <a href={site.github}>GitHub <span aria-hidden="true">↗</span></a>
+          <a href="#top">回到顶部 <span aria-hidden="true">↑</span></a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

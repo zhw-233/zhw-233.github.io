@@ -1,0 +1,27 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import NoteRow from '../../components/NoteRow.astro';
+import { listNotes } from '../../lib/entries';
+import { noteDate, site, sitePath } from '../../lib/site';
+
+const [latest, ...older] = await listNotes();
+const date = latest && noteDate(latest.data.date);
+const description = '把算法题的思路、写程序时遇到的问题和想留住的经验，按篇记在这里。';
+---
+<SiteLayout title={'笔记 · ' + site.name} description={description} section="notes">
+  <div class="shell archive notes-archive">
+    <header class="page-intro"><h1>笔记<span>.</span></h1><p>{description}</p></header>
+    {latest && <article>
+      <a class:list={['featured-note', { illustrated: latest.data.cover }]} href={sitePath('notes/' + latest.id + '/')} aria-label={'阅读笔记：' + latest.data.title}>
+        <div class="featured-note-copy">
+          <div class="entry-meta"><span>{latest.data.category}</span><time datetime={date}>{date?.replaceAll('-', '.')}</time></div>
+          <h2>{latest.data.title}</h2>
+          <p>{latest.data.summary}</p>
+          <span class="reading-link">阅读全文 <span aria-hidden="true">→</span></span>
+        </div>
+        {latest.data.cover && <img src={sitePath(latest.data.cover.path)} alt={latest.data.cover.alt} />}
+      </a>
+    </article>}
+    {older.length > 0 && <div class="notes-list">{older.map((note) => <NoteRow note={note} />)}</div>}
+  </div>
+</SiteLayout>

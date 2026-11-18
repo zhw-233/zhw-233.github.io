@@ -1,0 +1,29 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import { render } from 'astro:content';
+import EntryLayout from '../../layouts/EntryLayout.astro';
+import CompressionDemo from '../../components/CompressionDemo.astro';
+import { listProjects } from '../../lib/entries';
+import { sitePath } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const projects = await listProjects();
+  return projects.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content, headings } = await render(entry);
+const image = data.cover?.path || (data.visual === 'gomoku' ? 'media/gomoku.webp' : undefined);
+const download = data.sourceDownload ? { href: sitePath(data.sourceDownload), label: '下载项目源码（ZIP）', download: true } : undefined;
+const action = data.repo ? { href: data.repo, label: '查看项目源码' } : download;
+---
+<EntryLayout section="projects" title={data.title} description={data.summary} category={data.category} {headings} tags={data.stack} {image} {action}>
+  <Fragment slot="media">
+    {data.visual === 'imgshift' ? <CompressionDemo /> : image && <figure class="entry-figure">
+      <img src={sitePath(image)} alt={data.cover?.alt || '十五路棋盘上黑棋斜向连成五子的棋局示意'} />
+      {data.visual === 'gomoku' && <figcaption>棋局示意 · 从最后落下的黑子向斜线两侧计数。</figcaption>}
+    </figure>}
+  </Fragment>
+  <Content />
+</EntryLayout>

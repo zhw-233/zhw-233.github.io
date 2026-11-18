@@ -1,0 +1,15 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { listProjects } from '../../lib/entries';
+import { site } from '../../lib/site';
+
+const projects = await listProjects();
+const description = '做过的图像工具和桌面小游戏，以及它们从想法到实现的过程。';
+---
+<SiteLayout title={'项目 · ' + site.name} description={description} section="projects">
+  <div class="shell archive">
+    <header class="page-intro"><h1>项目<span>.</span></h1><p>{description}</p></header>
+    <div class="project-grid">{projects.map((project) => <ProjectCard project={project} />)}</div>
+  </div>
+</SiteLayout>
