@@ -8,38 +8,46 @@ interface Props {
   title: string;
   description: string;
   category: string;
+  draft: boolean;
   headings: MarkdownHeading[];
   date?: string;
   tags?: string[];
   image?: string;
-  action?: { href: string; label: string; download?: boolean };
+  repo?: string;
+  download?: { path: string; label: string };
 }
-const { section, title, description, category, headings, date, tags = [], image, action } = Astro.props;
+const { section, title, description, category, draft, headings, date, tags = [], image, repo, download } = Astro.props;
 const sectionName = section === 'projects' ? '项目' : '笔记';
-const back = sitePath(section + '/');
-const sections = headings.filter((heading) => heading.depth === 2);
+const sections = headings.filter(heading => heading.depth === 2);
+const attachment = download && sitePath(download.path);
 ---
 <SiteLayout title={title + ' · ' + site.name} {description} {section} {image} article>
-  <article class="shell entry">
-    <header class="entry-header">
-      <a class="backlink" href={back}><span aria-hidden="true">←</span> 全部{sectionName}</a>
-      <div class="entry-meta"><span>{category}</span>{date && <time datetime={date}>{date.replaceAll('-', '.')}</time>}</div>
+  <article class="detail">
+    <a class="backlink" href={sitePath(section + '/')}>← {sectionName}</a>
+    <header class="detail-head">
       <h1>{title}</h1>
-      <p class="entry-deck">{description}</p>
-      {tags.length > 0 && <ul class="tags" aria-label={section === 'projects' ? '使用的技术' : '标签'}>{tags.map((tag) => <li>{tag}</li>)}</ul>}
-    </header>
-    <div class="reading-layout">
-      <div class="reading-column">
-        <slot name="media" />
-        <div class="prose"><slot /></div>
-        {action && <div class="entry-actions"><a class="button primary" href={action.href} download={action.download}>{action.label} <span aria-hidden="true">{action.download ? '↓' : '↗'}</span></a></div>}
+      <p>{description}</p>
+      <div class="entry-meta">
+        {draft && <span>本地草稿</span>}
+        {date && <time datetime={date}>{date}</time>}
+        <span>{category}</span>
+        {tags.length > 0 && <span class="tech">{tags.join(' / ')}</span>}
+        {repo && <a href={repo}>项目源码 <span aria-hidden="true">↗</span></a>}
       </div>
-      {sections.length > 0 && <aside class="toc">
-        <nav aria-label="本文目录">
-          <strong>本文目录</strong>
-          <ul>{sections.map((heading) => <li><a href={'#' + heading.slug}>{heading.text}</a></li>)}</ul>
-        </nav>
-      </aside>}
-    </div>
+    </header>
+    <slot name="media" />
+    {sections.length > 1 && <details class="toc">
+      <summary>本文目录</summary>
+      <nav aria-label="本文目录"><ul>{sections.map(heading => <li><a href={'#' + heading.slug}>{heading.text}</a></li>)}</ul></nav>
+    </details>}
+    <div class="prose"><slot /></div>
+    {attachment && download && <div class="attachment">
+      <a href={attachment} download>{download.label} <span aria-hidden="true">↓</span></a>
+      {/\.pdf$/i.test(download.path) && <details>
+        <summary>预览 PDF</summary>
+        <iframe src={attachment + '#page=1&view=FitH'} title={title + '的 PDF 附件'} loading="lazy"></iframe>
+        <a href={attachment}>打开完整 PDF <span aria-hidden="true">↗</span></a>
+      </details>}
+    </div>}
   </article>
 </SiteLayout>

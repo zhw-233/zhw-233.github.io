@@ -1,18 +1,22 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { sitePath } from '../lib/site';
+import { comparisonSizes, projectMedia } from '../lib/project-media';
 import ProjectArt from './ProjectArt.astro';
 
 interface Props { project: CollectionEntry<'projects'>; heading?: 'h2' | 'h3' }
 const { project, heading: Heading = 'h2' } = Astro.props;
 const { data } = project;
+const { cover, comparison } = projectMedia(data);
+const sizes = comparison && comparisonSizes(comparison);
 ---
-<article class="project-card">
-  <a class="card-link" href={sitePath('projects/' + project.id + '/')} aria-label={'查看项目：' + data.title}>
-    <ProjectArt project={project} />
-    <div class="card-meta">{data.category}</div>
-    <div class="card-heading"><Heading>{data.title}</Heading><span class="card-arrow" aria-hidden="true">↗</span></div>
-    <p>{data.summary}</p>
-    <ul class="tags" aria-label="使用的技术">{data.stack.map((item) => <li>{item}</li>)}</ul>
+<article class="project-row">
+  <a class:list={['entry-link', { illustrated: cover }]} href={sitePath('projects/' + project.id + '/')} aria-label={'查看项目：' + data.title}>
+    <div class="entry-copy">
+      <Heading class="item-title">{data.title}</Heading>
+      <p>{data.summary}</p>
+      {sizes && <span class="sample-size">{sizes.original} → {sizes.compressed}</span>}
+    </div>
+    {cover && <ProjectArt {cover} closeup={data.visual === 'gomoku'} />}
   </a>
 </article>

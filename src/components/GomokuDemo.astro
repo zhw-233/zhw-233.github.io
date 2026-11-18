@@ -1,0 +1,45 @@
+---
+const black = [[1, 1], [2, 2], [4, 4], [5, 5]];
+const white = [[1, 3], [2, 4], [3, 2], [4, 2]];
+---
+<figure class="gomoku" data-gomoku>
+  <div class="board" role="img" aria-label="斜线上中间空一格，两侧各有两枚黑子">
+    <div class="grid" aria-hidden="true">
+      {black.map(([x, y]) => <i class="stone" style={{ '--x': x, '--y': y }}></i>)}
+      {white.map(([x, y]) => <i class="stone white" style={{ '--x': x, '--y': y }}></i>)}
+      <i class="stone last" style="--x:3; --y:3"></i>
+    </div>
+  </div>
+  <figcaption>
+    <p aria-live="polite">这条斜线上，中间空了一格，两侧各有两枚黑子。</p>
+    <button type="button" class="text-button" hidden>补上中间一子</button>
+  </figcaption>
+</figure>
+<script>
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-gomoku]')) {
+    const button = demo.querySelector('button')!;
+    const verdict = demo.querySelector('p')!;
+    const board = demo.querySelector('[role="img"]')!;
+    const startText = verdict.textContent;
+    const startLabel = board.getAttribute('aria-label')!;
+    button.hidden = false;
+    button.addEventListener('click', () => {
+      const played = demo.classList.toggle('played');
+      verdict.textContent = played ? '落子处向两头各数到两枚。2 + 1 + 2 = 5，黑棋连五。' : startText;
+      board.setAttribute('aria-label', played ? '五枚黑子斜向连成一线，中间为最后一子' : startLabel);
+      button.textContent = played ? '退回一步' : '补上中间一子';
+    });
+  }
+</script>
+<style>
+  .gomoku { display: grid; grid-template-columns: clamp(120px, 24vw, 174px) minmax(0, 1fr); align-items: center; gap: clamp(15px, 3vw, 27px); margin: 22px 0; }
+  .board { padding: 8%; aspect-ratio: 1; display: flex; background: light-dark(#efe6d5, #b3a78f); }
+  .grid { flex: 1; position: relative; background-image: linear-gradient(to right, #8b806c 1px, transparent 1px), linear-gradient(to bottom, #8b806c 1px, transparent 1px); background-size: calc(100% / 6) calc(100% / 6); border-right: 1px solid #8b806c; border-bottom: 1px solid #8b806c; }
+  .stone { position: absolute; left: calc(var(--x) * 100% / 6); top: calc(var(--y) * 100% / 6); width: 13%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); background: #252521; }
+  .white { background: #fffdf8; border: 1px solid #898271; }
+  .last { border: 1px dashed #3e3830; background: transparent; }
+  .played .last { border: 0; background: #252521; }
+  .played .last::after { content: ''; position: absolute; inset: 34%; border: 1px solid #ede6d6; border-radius: 50%; }
+  figcaption { max-width: 22em; font-size: .9375rem; }
+  button { margin-top: 5px; }
+</style>

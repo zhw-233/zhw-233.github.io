@@ -1,36 +1,9 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import { sitePath } from '../lib/site';
 
-interface Props { project: CollectionEntry<'projects'> }
-const { data } = Astro.props.project;
+interface Props { cover: { path: string; alt: string }; closeup?: boolean }
+const { cover, closeup = false } = Astro.props;
 ---
-{data.cover ? (
-  <div class="project-art"><img src={sitePath(data.cover.path)} alt={data.cover.alt} loading="lazy" /></div>
-) : data.visual === 'gomoku' ? (
-  <div class="project-art"><img src={sitePath('media/gomoku.webp')} alt="十五路棋盘上黑棋斜向连成五子，棋局示意" width="1140" height="760" loading="lazy" /></div>
-) : data.visual === 'imgshift' ? (
-  <div class="project-art format-art" role="img" aria-label="PNG 与 WebP 两张图像文件的格式转换示意">
-    <div class="file-stack" aria-hidden="true">
-      <div class="file-sheet input-sheet"><div class="art-swatch"><i></i><i></i><i></i></div><span>PNG</span></div>
-      <div class="file-sheet output-sheet"><div class="art-swatch"><i></i><i></i><i></i></div><span>WebP</span></div>
-    </div>
-  </div>
-) : null}
-<style>
-  .project-art { width: 100%; aspect-ratio: 2.18; overflow: hidden; border-radius: var(--radius); }
-  .project-art img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .4s ease; }
-  :global(.project-card:hover) img { transform: scale(1.018); }
-  .format-art { position: relative; isolation: isolate; display: grid; place-items: center; background-color: #dadaf1; background-image: radial-gradient(#9395b854 .8px, transparent 1px); background-size: 15px 15px; }
-  .file-stack { position: relative; width: 45%; max-width: 242px; aspect-ratio: 1.75; }
-  .file-sheet { position: absolute; width: 62%; height: 93%; display: flex; flex-direction: column; justify-content: space-between; padding: 5% 5% 3%; background: #fbfaff; color: #31255a; border-radius: 4px; box-shadow: 4px 9px 18px #30256337, 0 0 0 1px #28253f1a; }
-  .input-sheet { left: 0; top: -6%; transform: rotate(-12deg); }
-  .output-sheet { right: 0; bottom: -4%; transform: rotate(11deg); }
-  .art-swatch { display: flex; align-items: center; justify-content: center; overflow: hidden; isolation: isolate; flex: 1; background-color: #ece8f6; background-image: conic-gradient(#dcd8e8 25%, transparent 0 50%, #dcd8e8 0 75%, transparent 0); background-size: 12px 12px; }
-  .art-swatch i { display: block; height: 72%; width: 27%; margin: 0 -6%; border-radius: 50%; transform: rotate(31deg); background: #3458dc; mix-blend-mode: multiply; }
-  .art-swatch i:nth-child(2) { background: #eb8bb5; }
-  .art-swatch i:nth-child(3) { background: #e6ca68; }
-  .output-sheet .art-swatch { background: #e0e6fc; }
-  .file-sheet span { margin-top: 5%; font-size: clamp(11px, 1.2vw, 16px); font-weight: 690; letter-spacing: -.025em; line-height: 1; }
-  @media (prefers-reduced-motion: reduce) { .project-art img { transition: none; } }
-</style>
+<span class:list={['project-thumb', { closeup }]}>
+  <img src={sitePath(cover.path)} alt={cover.alt} loading="lazy" decoding="async" />
+</span>

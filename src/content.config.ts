@@ -7,17 +7,22 @@ const common = z.object({
   summary: z.string().min(1),
   category: z.string().min(1),
   draft: z.boolean().default(false),
-  cover: z.object({ path: z.string(), alt: z.string() }).optional(),
+  cover: z.object({ path: z.string().min(1), alt: z.string().min(1) }).optional(),
 });
 
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
   schema: common.extend({
-    order: z.number().int().nonnegative(),
+    order: z.number().int().nonnegative().default(100),
     stack: z.array(z.string()).default([]),
     repo: z.url().optional(),
     sourceDownload: z.string().optional(),
     visual: z.enum(['imgshift', 'gomoku']).optional(),
+    comparison: z.object({
+      original: z.string().min(1),
+      compressed: z.string().min(1),
+      alt: z.string().min(1),
+    }).optional(),
   }),
 });
 

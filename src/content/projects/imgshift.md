@@ -1,10 +1,13 @@
 ---
 title: ImgShift-Tool
-summary: 在桌面窗口和命令行里转换图片格式、调整压缩参数，也可以把一组图片做成 GIF。
+summary: 一个简单的图片格式转换工具
 category: 图像工具
 stack: [C++, Qt, Python, Pillow]
 order: 1
-visual: imgshift
+comparison:
+  original: media/terrain-original.jpg
+  compressed: media/terrain-compressed.jpg
+  alt: 蓝色地形样张上相邻的山脊等高线
 repo: https://github.com/zhw-233/ImgShift-Tool
 ---
 

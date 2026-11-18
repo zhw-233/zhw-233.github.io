@@ -1,73 +1,100 @@
-# zhw 的个人网站
+# zhw 的作品与笔记
 
-一个用 Astro 和 Markdown 维护的中文作品集。首页展示代表项目和最近笔记，项目与文章各有固定链接，适合从简历直接指向某个作品。
+一个用 Astro 和 Markdown 维护的中文个人网站。简历可以直接链接到某个项目或某篇笔记。每篇内容各有一个文件，修改标题或正文时可以一直沿用原地址。
 
-## 本地使用
+## 本机预览
 
-进入项目根目录，在终端运行以下命令启动开发预览，打开终端显示的本机地址。当前项目已配好本地依赖。在新电脑或新克隆的工作目录上，先用 Node.js 22.23.4 或更新版本执行一次 `npm ci`。
+使用 Node.js 24（仓库的 `.nvmrc` 和 GitHub Actions 使用同一主版本）。首次克隆或更新依赖后，在仓库根目录运行以下命令，打开终端显示的本机地址。
 
 ```sh
+npm ci
 npm run dev
 ```
 
-检查最终的静态页面时运行以下两行。构建结果位于 `dist/`。
+## 平时改哪里
+
+| 想改的内容 | 文件或目录 |
+| --- | --- |
+| 署名、首页自我介绍、GitHub 链接、站点描述 | [src/lib/site.ts](src/lib/site.ts) |
+| 项目标题、排序、技术栈和介绍 | [src/content/projects/](src/content/projects/) |
+| 笔记标题、日期和正文 | [src/content/notes/](src/content/notes/) |
+| 图片和可下载附件 | [public/media/](public/media/) 和 [public/files/](public/files/) |
+| 配色、字号、间距和页面宽度 | [src/styles/global.css](src/styles/global.css) |
+
+上传仓库后，也可以直接在 GitHub 打开对应的 Markdown 文件，用铅笔按钮编辑并提交。新增内容时，把[项目模板](templates/project.md)或[笔记模板](templates/note.md)复制到对应的内容目录，换成自己的文件名。模板里的示例日期也可以修改。
+
+### 写一篇新内容
+
+在本机可以用以下命令从模板新建文件。同名文件会得到提示。笔记会自动填入当天日期。
+
+```sh
+npm run new:project -- my-tool
+npm run new:note -- prefix-sums
+```
+
+例如，第二行会创建 `src/content/notes/prefix-sums.md`。条目的标题、简介和排序来自文件开头两个 `---` 之间的信息，第二个 `---` 之后是正文。文件名适合用简短的小写英文、数字和连字符。保留文件名和目录即可保持简历里的链接有效。
+
+1. 填好 `title`、一句话的 `summary` 和 `category`。笔记还需要 `date`，格式为 `YYYY-MM-DD`。
+2. 保持 `draft: true` 写作。运行 `npm run dev` 后，在本机直接打开 `/notes/prefix-sums/` 或 `/projects/my-tool/` 看草稿。草稿仅在开发预览中有详情页，首页和列表只列成稿。公开仓库的源码可见，私密笔记请保存在仓库之外。
+3. 写好后改成 `draft: false`。项目按 `order` 从小到大排，默认 100，首页取前两个。笔记按 `date` 从新到旧排，首页取最近三篇。相同排序值或日期按条目 ID 排列。
+4. 运行 `npm run build` 检查。首页、列表、详情页和正文目录会自动生成。正文有两个或更多 `##` 标题时会显示折叠目录。
+
+### 配图、附件与源码
+
+图片放进 `public/media/`，附件放进 `public/files/`。在 Markdown 正文里用以 `/` 开头的站内路径。仓库名由构建过程补上，同一篇正文也可以用在独立域名。
+
+```md
+![展示算法执行结果的图](/media/prefix-sum.png)
+[五子棋项目](/projects/gomoku/)
+[下载题单](/files/acm-guide.pdf)
+```
+
+在文件顶部填写素材时，路径从 `public/` 内部开始写，例如 `media/gomoku.webp`。以下字段都可按需添加。
+
+| 内容 | 可选字段 |
+| --- | --- |
+| 项目 | `stack` 是技术栈列表，`repo` 是完整的源码仓库网址，`sourceDownload` 是可下载的本地源码包。`cover.path` 和 `cover.alt` 指定缩略图及其说明。 |
+| 图像对照项目 | `comparison.original`、`comparison.compressed` 和 `comparison.alt` 指定两份样张和说明。详情页可以切换两张图，体积按实际文件计算。[ImgShift 示例](src/content/projects/imgshift.md) |
+| 笔记 | `tags` 是标签列表，`cover` 用于分享卡片。`attachment` 和 `attachmentLabel` 指定附件及下载文字。PDF 会提供可展开的预览。[笔记示例](src/content/notes/acm-roadmap.md) |
+
+## 检查发布版本
 
 ```sh
 npm run build
 npm run preview
 ```
 
-## 修改个人资料
-
-在 `src/lib/site.ts` 修改署名、GitHub 地址、首页介绍和站点描述。导航与分享信息位于 `src/layouts/SiteLayout.astro`，页面配色和字号在 `src/styles/global.css`。Geist 字体随站点一起加载，中文字体优先使用访客设备上的苹方、思源黑体或微软雅黑。
-
-## 写一篇博客
-
-在 `src/content/notes/` 下新建一个 Markdown 文件。文件名决定文章地址，例如 `first-post.md` 对应 `/notes/first-post/`。已写进简历或分享出去的地址，保留原文件名即可长期使用。
-
-```markdown
----
-title: 我的第一篇开发随笔
-summary: 这篇文章解决了什么问题。
-category: 开发随笔
-date: 2026-11-18
-tags: [开发记录]
-draft: true
----
-
-## 问题是怎么出现的
-
-在这里写下正文。
-```
-
-准备好后，把 `draft` 改为 `false`。首页和笔记列表按日期自动更新，正文里的二级标题会生成目录。最新一篇会出现在笔记页首位。可选的 `cover.path` 和 `cover.alt` 用于添加封面，`attachment` 与 `attachmentLabel` 用于提供附件和下载按钮。图片和附件的路径相对于 `public/`，例如 `media/prefix-sum.png` 或 `files/acm-guide.pdf`。
-
-## 增加一个项目
-
-在 `src/content/projects/` 下新建 Markdown。写入 `title`、`summary`、`category`、`stack` 和 `order`，小的排序值在前，前两个项目出现在首页。可选的 `repo` 接受源码仓库链接，`sourceDownload` 接受本地源码包路径。可以用一张自己的图作封面。
-
-```yaml
-cover:
-  path: media/my-project.webp
-  alt: 一句话描述图里的内容
-```
-
-项目和笔记都支持 `draft: true`。草稿会同时从列表和详情路由中排除。首页和项目页使用的压缩对照实测值由两张文件的实际大小计算。
-
-## 预览将来的访问路径
-
-默认从域名根路径构建。若之后准备挂在 `/personal-site/` 子路径，可以先在本机验证同样的链接结构。
+`dist/` 是生成的静态站点。构建会检查页面中引用的站内地址、标题锚点、图片和下载文件。遇到无效链接时，终端会列出出错页面和目标地址。要在本机模拟仓库名为 `personal-site` 的路径，可以运行以下命令，再访问终端显示的 `/personal-site/` 地址。
 
 ```sh
 BASE_PATH=/personal-site/ npm run build
 BASE_PATH=/personal-site/ npm run preview
 ```
 
-有正式域名后，构建时额外传入 `SITE_URL`，取值为该站点的完整来源地址（协议和域名）。构建器会生成规范链接和分享卡片地址。最终交付给静态托管服务的目录是 `dist/`。
+`SITE_URL` 可选，用正式来源地址（例如 `https://zhw-233.github.io`）生成规范链接和分享图片的完整地址。GitHub Actions 会从 Pages 设置读取正式地址和路径。
 
-## 首版素材
+## 上传与手动发布
 
-- 地形图是原创高度场渲染。ImgShift 先以质量 96 生成 JPEG 原图，再用 `zip -q 63 -progressive` 压缩。网页中的滑块直接对照两份输出。
-- 五子棋封面是按项目棋盘规则绘制的对局示意图。下载包包含原项目的 `src/main.c`、MinGW 编译脚本和 README。
-- ACM 导读的 PDF 来自原题单工程的 `main.pdf`。笔记封面将正文的四项数列绘成了前缀和示意图。
-- Geist 字体的授权文本随站点保存在 `public/licenses/Geist-OFL.txt`。
+1. 在自己的 GitHub 账号创建一个空仓库。个人主页通常使用 `用户名.github.io`，普通仓库如 `personal-site` 则对应 `/personal-site/`。在 GitHub Free 上可使用公开仓库。[GitHub Pages 官方指南](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+2. 把当前工作区的改动提交到 `main`，再推送到该仓库。源码应包含隐藏目录 `.github/workflows/` 和 `package-lock.json`。生成目录 `dist/`、`node_modules/` 和 `.astro/` 已加入忽略列表。推送到 `main` 或创建面向 `main` 的拉取请求时，只运行构建和链接检查。
+3. 准备上线时，在仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
+4. 到 **Actions → Portfolio Pages → Run workflow**，选 `main` 并运行。构建通过后才会部署，访问地址显示在该次运行的 `deploy` 任务中。以后更新线上网站也使用这个手动入口。[发布工作流](.github/workflows/pages.yml) · [GitHub 官方工作流说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+
+<details>
+<summary>首次把当前项目推送到空仓库的 Git 命令</summary>
+
+把示例地址换成自己的仓库地址。如果 `git remote -v` 已显示正确的 `origin`，可跳过添加远端的一行。
+
+```sh
+git status
+git add --all
+git commit -m "Prepare portfolio for GitHub Pages"
+git remote add origin https://github.com/YOUR-USER/YOUR-REPO.git
+git push -u origin main
+```
+
+</details>
+
+## 现有素材
+
+地形图是原创高度场渲染，页面对照的是 ImgShift 实际输出的两份 JPEG。五子棋源码包包含原项目的 `src/main.c`、MinGW 编译脚本和说明。ACM 题单 PDF 来自原题单工程。西文字体 Geist 随网站本地加载。[字体授权](public/licenses/Geist-OFL.txt)

@@ -1,0 +1,10 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { site, sitePath } from '../lib/site';
+---
+<SiteLayout title={'找不到这一页 · ' + site.name} notFound>
+  <header class="page-intro">
+    <h1>找不到这一页</h1>
+    <p>可以回到<a href={sitePath()}>首页</a>，或从<a href={sitePath('projects/')}>项目</a>和<a href={sitePath('notes/')}>笔记</a>里继续找。</p>
+  </header>
+</SiteLayout>

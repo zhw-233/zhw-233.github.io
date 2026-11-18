@@ -8,9 +8,11 @@ const { data } = note;
 const date = noteDate(data.date);
 ---
 <article class="note-row">
-  <a href={sitePath('notes/' + note.id + '/')} class="note-link">
-    <div class="note-meta"><time datetime={date}>{date.replaceAll('-', '.')}</time><span>{data.category}</span></div>
-    <div class="note-text"><Heading>{data.title}</Heading><p>{data.summary}</p></div>
-    <span class="card-arrow" aria-hidden="true">↗</span>
+  <a class="entry-link" href={sitePath('notes/' + note.id + '/')} aria-label={'阅读笔记：' + data.title}>
+    <div class="entry-copy">
+      <Heading class="item-title">{data.title}</Heading>
+      <time datetime={date}>{date}</time>
+      <p>{data.summary}</p>
+    </div>
   </a>
 </article>

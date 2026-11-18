@@ -9,25 +9,26 @@ interface Props {
   section?: 'home' | 'projects' | 'notes';
   article?: boolean;
   image?: string;
+  notFound?: boolean;
 }
 
-const { title, description = site.description, section, article = false, image } = Astro.props;
+const { title, description = site.description, section, article = false, image, notFound } = Astro.props;
 const nav = [
-  { id: 'home', label: '首页', path: '' },
   { id: 'projects', label: '项目', path: 'projects/' },
   { id: 'notes', label: '笔记', path: 'notes/' },
 ];
-const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site).href;
-const shareImage = Astro.site && new URL(sitePath(image || 'media/terrain-original.jpg'), Astro.site).href;
+const canonical = !notFound && Astro.site && new URL(Astro.url.pathname, Astro.site).href;
+const shareImage = Astro.site && image && new URL(sitePath(image), Astro.site).href;
 ---
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f9f9f6" />
+    <meta name="color-scheme" content="light dark" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {notFound && <meta name="robots" content="noindex" />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={site.name} />
@@ -37,31 +38,51 @@ const shareImage = Astro.site && new URL(sitePath(image || 'media/terrain-origin
     {canonical && <meta property="og:url" content={canonical} />}
     {shareImage && <meta property="og:image" content={shareImage} />}
     <link rel="icon" type="image/png" href={sitePath('favicon.png')} />
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('zhw-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
+      } catch { /* 系统外观仍然可用。 */ }
+    </script>
   </head>
   <body id="top">
     <a href="#main" class="skip-link">跳到正文</a>
-    <header class="site-header">
-      <div class="shell header-inner">
-        <a class="brand-link" href={sitePath()} aria-label={site.name + ' 首页'}><Wordmark /></a>
-        <nav class="main-nav" aria-label="主导航">
-          {nav.map((item) => {
-            const selected = section === item.id;
-            const current = Astro.url.pathname === sitePath(item.path) ? 'page' : 'location';
-            return <a href={sitePath(item.path)} aria-current={selected ? current : undefined}>{item.label}</a>;
-          })}
-        </nav>
+    <header class="site-header shell">
+      <a class="brand-link" href={sitePath()} aria-label={site.name + ' 首页'} aria-current={section === 'home' ? 'page' : undefined}><Wordmark /></a>
+      <nav class="main-nav" aria-label="主导航">
+        {nav.map(item => {
+          const current = Astro.url.pathname === sitePath(item.path) ? 'page' : 'location';
+          return <a href={sitePath(item.path)} aria-current={section === item.id ? current : undefined}>{item.label}</a>;
+        })}
         <a class="github-link" href={site.github}>GitHub <span aria-hidden="true">↗</span></a>
-      </div>
+        <button type="button" id="theme-toggle" hidden>切换外观</button>
+      </nav>
     </header>
-    <main id="main" tabindex="-1"><slot /></main>
-    <footer class="site-footer">
-      <div class="shell footer-inner">
-        <a class="brand-link" href={sitePath()} aria-label={site.name + ' 首页'}><Wordmark /></a>
-        <div class="footer-links">
-          <a href={site.github}>GitHub <span aria-hidden="true">↗</span></a>
-          <a href="#top">回到顶部 <span aria-hidden="true">↑</span></a>
-        </div>
-      </div>
+    <main id="main" class="shell" tabindex="-1"><slot /></main>
+    <footer class="site-footer shell">
+      <a href={sitePath()}>{site.name}</a>
+      <a href="#top">回到顶部 <span aria-hidden="true">↑</span></a>
     </footer>
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
+      if (toggle) {
+        const root = document.documentElement;
+        const system = window.matchMedia('(prefers-color-scheme: dark)');
+        const dark = () => root.dataset.theme ? root.dataset.theme === 'dark' : system.matches;
+        const label = () => {
+          toggle.textContent = dark() ? '浅色' : '深色';
+          toggle.setAttribute('aria-label', '切换到' + toggle.textContent);
+        };
+        toggle.hidden = false;
+        label();
+        toggle.addEventListener('click', () => {
+          const theme = dark() ? 'light' : 'dark';
+          root.dataset.theme = theme;
+          try { localStorage.setItem('zhw-theme', theme); } catch { /* 仍在本页生效。 */ }
+          label();
+        });
+        system.addEventListener('change', label);
+      }
+    </script>
   </body>
 </html>
