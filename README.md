@@ -73,27 +73,13 @@ BASE_PATH=/personal-site/ npm run preview
 
 `SITE_URL` 可选，用正式来源地址（例如 `https://zhw-233.github.io`）生成规范链接和分享图片的完整地址。GitHub Actions 会从 Pages 设置读取正式地址和路径。
 
-## 上传与手动发布
+## 发布到 GitHub Pages
 
-1. 在自己的 GitHub 账号创建一个空仓库。个人主页通常使用 `用户名.github.io`，普通仓库如 `personal-site` 则对应 `/personal-site/`。在 GitHub Free 上可使用公开仓库。[GitHub Pages 官方指南](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
-2. 把当前工作区的改动提交到 `main`，再推送到该仓库。源码应包含隐藏目录 `.github/workflows/` 和 `package-lock.json`。生成目录 `dist/`、`node_modules/` 和 `.astro/` 已加入忽略列表。推送到 `main` 或创建面向 `main` 的拉取请求时，只运行构建和链接检查。
-3. 准备上线时，在仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
-4. 到 **Actions → Portfolio Pages → Run workflow**，选 `main` 并运行。构建通过后才会部署，访问地址显示在该次运行的 `deploy` 任务中。以后更新线上网站也使用这个手动入口。[发布工作流](.github/workflows/pages.yml) · [GitHub 官方工作流说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+`main` 保存网站源码。把改动提交到本地 `main` 后运行 `git push`，GitHub Actions 会自动构建网站、检查站内链接，并在检查通过后把 `dist/` 部署到线上。直接在 GitHub 上提交到 `main` 也会触发同一流程。[线上网站](https://zhw-233.github.io/) · [部署记录](https://github.com/zhw-233/zhw-233.github.io/actions/workflows/pages.yml)
 
-<details>
-<summary>首次把当前项目推送到空仓库的 Git 命令</summary>
+面向 `main` 的拉取请求会在 `/preview/` 路径下进行构建和链接检查。需要重新发布当前版本时，可在 **Actions → Portfolio Pages → Run workflow** 选择 `main`。[发布工作流](.github/workflows/pages.yml)
 
-把示例地址换成自己的仓库地址。如果 `git remote -v` 已显示正确的 `origin`，可跳过添加远端的一行。
-
-```sh
-git status
-git add --all
-git commit -m "Prepare portfolio for GitHub Pages"
-git remote add origin https://github.com/YOUR-USER/YOUR-REPO.git
-git push -u origin main
-```
-
-</details>
+仓库的 **Settings → Pages → Build and deployment → Source** 使用 **GitHub Actions**。本地生成的 `dist/`、`node_modules/` 和 `.astro/` 已加入 Git 忽略列表。
 
 ## 现有素材
 
